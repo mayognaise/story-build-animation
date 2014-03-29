@@ -1010,7 +1010,7 @@
       return walkingBirds.push(d);
     }).remove();
     count = 0;
-    end = 100;
+    end = 90;
     open = 20;
     return iid = setInterval(function() {
       var arr, d, deg, group, index, pos, _i, _j, _len, _len1;
@@ -1018,20 +1018,6 @@
         d = walkingBirds[index];
         group = d.group;
         pos = group.translate();
-        if (d.open) {
-          if (count < d.openCount + 40) {
-            pos.scale = walkingBirdScale + .03 * (count - open) / open;
-            pos.y += Math.pow(1.005, count);
-          }
-          if (!(group.rotation() < 30)) {
-            pos.deg = (group.rotation() + d.a / 2) % 360;
-          }
-        } else {
-          pos.x += d.a / 4;
-          pos.y += Math.pow(1.04, count);
-          pos.deg = (group.rotation() + d.a) % 360;
-        }
-        group.translate(pos);
         if (count === open && index % 3 === 0) {
           d.openCount = open + ~~(Math.random() * 30);
         }
@@ -1042,6 +1028,26 @@
           });
           d.open = true;
         }
+        if (d.open) {
+          pos.x += d.a / 35 * 2;
+          if (count < d.openCount + 34) {
+            pos.scale = walkingBirdScale + .03 * (count - open) / open;
+            pos.y += Math.pow(1.005, count);
+          }
+          if (!(group.rotation() < 10)) {
+            deg = group.rotation() + d.a / 2;
+            if (deg >= 360) {
+              pos.deg = Math.random() * 9;
+            } else {
+              pos.deg = deg % 360;
+            }
+          }
+        } else {
+          pos.x += d.a / 4;
+          pos.y += Math.pow(1.04, count);
+          pos.deg = (group.rotation() + d.a) % 360;
+        }
+        group.translate(pos);
       }
       if (++count > end) {
         clearInterval(iid);
@@ -1050,8 +1056,6 @@
           d = walkingBirds[index];
           group = d.group;
           if (d.open) {
-            deg = ~~(Math.random() * 12) - 6;
-            group.rotate(deg, 1500);
             arr.push(d);
           } else {
             group.remove();

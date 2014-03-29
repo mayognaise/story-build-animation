@@ -63,23 +63,12 @@ openBirds = (svg) ->
     .remove()
 
   count = 0
-  end = 100
+  end = 90
   open = 20
   iid = setInterval ->
     for d, index in walkingBirds
       group = d.group
       pos = group.translate()
-      if d.open
-        if count < d.openCount + 40
-          pos.scale = walkingBirdScale + .03 * (count - open) / open
-          pos.y += Math.pow(1.005,count)
-        unless group.rotation() < 30
-          pos.deg = (group.rotation() + d.a/2) % 360
-      else
-        pos.x += d.a / 4
-        pos.y += Math.pow(1.04,count)
-        pos.deg = (group.rotation() + d.a) % 360
-      group.translate(pos)
       if count is open and index % 3 is 0
         d.openCount = open + ~~(Math.random()*30)
       if count is d.openCount
@@ -87,14 +76,30 @@ openBirds = (svg) ->
           el.flyFlag = true
           el.fly()
         d.open = true
+      if d.open
+        pos.x += d.a / 35 * 2
+        if count < d.openCount + 34
+          pos.scale = walkingBirdScale + .03 * (count - open) / open
+          pos.y += Math.pow(1.005,count)
+        unless group.rotation() < 10
+          deg = group.rotation() + d.a/2
+          if deg >= 360
+            pos.deg = (Math.random()*9)
+          else
+            pos.deg = deg % 360
+      else
+        pos.x += d.a / 4
+        pos.y += Math.pow(1.04,count)
+        pos.deg = (group.rotation() + d.a) % 360
+      group.translate(pos)
     if ++count > end
       clearInterval(iid)
       arr = []
       for d, index in walkingBirds
         group = d.group
         if d.open
-          deg = ~~(Math.random()*12) - 6
-          group.rotate(deg, 1500)
+          # deg = ~~(Math.random()*12) - 6
+          # group.rotate(deg, 1500)
           arr.push(d)
         else
           group.remove()
