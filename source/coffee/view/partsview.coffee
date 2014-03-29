@@ -9,6 +9,9 @@ class PartsView
     @elem().classed("hide", true)
     @
 
+  addType: (type) ->
+    @elem().attr('type', type)
+
   remove: ->
     @elem().remove()
 

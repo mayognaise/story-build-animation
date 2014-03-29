@@ -4,12 +4,13 @@ downTime = 800
 wingOrigin = {x: 253, y: 253}
 # ================================================
 class WalkingBird extends BaseView
-  constructor: (@parent, @id, @width, @height) ->
+  constructor: (@parent, @id, @type, @data) ->
     @y = 0
     @group = new GroupView(@parent, @id, _.clone(wingOrigin))
+    @group.addType(@type)
     @group.hide()
     @elem = @group.target()
-    super(@parent, @id, @width, @height)
+    super(@parent, @id, @type, @data)
   onLoadSVG: ->
     @back = new WalkingBirdBack(@elem, @data)
     @legs = new WalkingBirdLegs(@elem, @data)
@@ -92,7 +93,7 @@ class WalkingBird extends BaseView
       @body.down()
       @legs.down()
       @back.down()
-      @y = 100
+      @y = 100 + ~~(Math.random()*200)
       up = true
       duration = downTime
     @resize(duration)

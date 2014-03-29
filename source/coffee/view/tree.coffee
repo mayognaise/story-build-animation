@@ -24,7 +24,7 @@ class Tree
         if d.last is true and Math.random() < .05
           el.classed('walking_bird_group', true)
           wbg = new GroupView(el, 'wbg')
-          wb = new WalkingBird(wbg.elem(), 'walking_bird', walkingBirdData)
+          wb = new WalkingBird(wbg.elem(), 'walking_bird', d.type, walkingBirdData)
           wbg.scale(walkingBirdScale).rotate(d.rotation)
           d.wbg = wbg
         else
@@ -45,7 +45,16 @@ class Tree
         nodes.forEach (node, index) ->
           if index >= nodes.length - amount
             for num in [0..Math.min(8,amount)]
-              arr.push([{x:(node.x+(num-amount/2)*10),y:node.y, last: count is max, rotation:(~~(Math.random()*80)+5)}, nodes[index]])
+              arr.push([
+                {
+                  x:(node.x+(num-amount/2)*10)
+                  y:node.y
+                  last: count is max
+                  rotation:(~~(Math.random()*80)+5)
+                  type:(~~(Math.random()*3) + 1)
+                },
+                nodes[index]
+              ])
         for dat in arr
           @add(dat[0], dat[1])
       else

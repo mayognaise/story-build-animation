@@ -1,5 +1,5 @@
 class BaseView
-  constructor: (@parent, @id, @data) ->
+  constructor: (@parent, @id, @type, @data) ->
     @width = window.innerWidth
     @height = window.innerHeight
     unless @data

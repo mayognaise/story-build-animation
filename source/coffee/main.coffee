@@ -10,14 +10,19 @@
 walkingBirdData = undefined
 walkingBirdScale = .1
 walkingBirds = []
+# =============================
+fly = ->
+  for d, index in walkingBirds
+    console.log(d.type)
 
+# =============================
 openBirds = (svg) ->
   parent = svg.append('g')
   svg.selectAll('.walking_bird_group')
     .each( (d) ->
       group = new GroupView(parent, 'wbg')
       group.translate(d)
-      wb = new WalkingBird(group.elem(), 'walking_bird', walkingBirdData)
+      wb = new WalkingBird(group.elem(), 'walking_bird', d.type, walkingBirdData)
       group.scale(walkingBirdScale).rotate(d.rotation)
       d.a = ~~(Math.random()*20) + 15
       d.el = wb
@@ -34,9 +39,10 @@ openBirds = (svg) ->
       group = d.group
       pos = group.translate()
       if d.open
-        pos.scale = walkingBirdScale + .03 * (count - open) / open
-        pos.y += Math.pow(1.005,count)
-        unless group.rotation() < 10
+        if count < d.openCount + 40
+          pos.scale = walkingBirdScale + .03 * (count - open) / open
+          pos.y += Math.pow(1.005,count)
+        unless group.rotation() < 30
           pos.deg = (group.rotation() + d.a/2) % 360
       else
         pos.x += d.a / 4
@@ -52,16 +58,20 @@ openBirds = (svg) ->
         d.open = true
     if ++count > end
       clearInterval(iid)
+      arr = []
       for d, index in walkingBirds
         group = d.group
         if d.open
           deg = ~~(Math.random()*12) - 6
           group.rotate(deg, 1500)
+          arr.push(d)
         else
           group.remove()
+      walkingBirds = arr
+      fly()
   , 33
 
-
+# =============================
 start = ->
   width = window.innerWidth
   height = window.innerHeight
@@ -86,7 +96,6 @@ start = ->
         clearInterval(iid)
         group.transition()
           .duration(2500)
-          # .attr('transform', 'translate(0,0)')
           .attr('transform', 'translate(-'+(initX*3)+',0)')
           .each 'end', ->
             tree.stop()
