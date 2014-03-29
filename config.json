@@ -1,0 +1,58 @@
+{
+  "options": {
+    "livereload": {
+      "port": 35729
+    }
+  },
+  "env": {
+    "localhost": {
+      "url": {
+        "protocol": "http",
+        "domain": "localhost",
+        "port": 8888
+      }
+    },
+    "development": {
+      "url": {
+        "protocol": "https",
+        "domain": "mlb.github.io",
+        "port": null
+      }
+    },
+    "production": {
+      "url": {
+        "protocol": "https",
+        "domain": "mlb.github.io",
+        "port": null
+      }
+    }
+  },
+  "path": {
+    "base": ".",
+    "source": {
+      "base": "source/",
+      "html": "source/*.html",
+      "less": "source/*.less",
+      "js": "source/*.js",
+      "asset": "source/assets/**"
+    },
+    "watch": {
+      "html": [
+        "source/**/*.html"
+      ],
+      "less": [
+        "source/**/*.less"
+      ],
+      "css": [
+        "source/**/*.css"
+      ],
+      "js": [
+        "source/**/*.js"
+      ]
+    },
+    "build": {
+      "dev": "build/dev",
+      "dist": "build/dist"
+    }
+  }
+}
