@@ -1,7 +1,9 @@
 class PolygonView extends PartsView
-  constructor: (@parent, @data, @id, @origin) ->
+  constructor: (@parent, @data, @klass, @origin) ->
+    @id("#{@klass}_#{(new Date).getTime()}")
     g = @parent.append('g')
-      .attr('id', @id)
+      .attr('id', @id())
+      .attr('class', @klass)
 
     if @origin
       g.attr('transform', @transform(@origin))

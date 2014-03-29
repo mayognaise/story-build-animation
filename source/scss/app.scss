@@ -40,3 +40,52 @@ div#renderdiv {
     }
   }
 }
+
+.walking_bird{
+  &[type="2"]{
+    .left_leaf, .right_leaf{
+      *{
+        fill: #FDBA30;
+      }
+    }
+    .mouth, .back{
+      *{
+        fill: #847A17;
+      }
+    }
+  }
+  &[type="3"]{
+    .left_leaf, .right_leaf{
+      *{
+        fill: #FCD4C8;
+      }
+    }
+    .mouth, .dot, .back{
+      *{
+        fill: #847A17;
+      }
+    }
+  }
+  &[type="4"]{
+    .left_leaf, .right_leaf{
+      *{
+        fill: #847A17;
+      }
+    }
+    .mouth, .dot, .back{
+      *{
+        fill: #FCD4C8;
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+

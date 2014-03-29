@@ -9,7 +9,9 @@ class Tree
       .on('tick', => @tick())
     @restart()
 
+  # typeCount: 0
   restart: ->
+    typeCount = @typeCount
     walkingBirdData = @walkingBirdData
     walkingBirdScale = @walkingBirdScale
     link = @link().data(@links())
@@ -22,6 +24,7 @@ class Tree
       .each (d) ->
         el = d3.select(@)
         if d.last is true and Math.random() < .05
+          # d.type = (typeCount++ % 4) + 1
           el.classed('walking_bird_group', true)
           wbg = new GroupView(el, 'wbg')
           wb = new WalkingBird(wbg.elem(), 'walking_bird', d.type, walkingBirdData)

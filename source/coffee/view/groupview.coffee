@@ -1,9 +1,9 @@
 class GroupView extends PartsView
-  constructor: (@parent, id, @origin) ->
-    @id("#{id}_#{(new Date).getTime()}")
+  constructor: (@parent, @klass, @origin) ->
+    @id("#{@klass}_#{(new Date).getTime()}")
     g = @parent.append('g')
       .attr('id', @id())
-      .attr('class', id)
+      .attr('class', @klass)
 
     if @origin
       g.attr('transform', @transform(@origin))
@@ -14,11 +14,6 @@ class GroupView extends PartsView
 
     @_target = tgt
     @elem(g)
-
-  id: (id) ->
-    if id isnt undefined
-      @_id = id
-    @_id
 
   target: ->
     @_target

@@ -7,13 +7,44 @@
 #= require view/walking_bird.coffee
 #= require view/tree.coffee
 
+width = window.innerWidth
+height = window.innerHeight
+
 walkingBirdData = undefined
 walkingBirdScale = .1
 walkingBirds = []
 # =============================
 fly = ->
-  for d, index in walkingBirds
-    console.log(d.type)
+  # for d, index in walkingBirds
+    # console.log(d.a)
+  iid = setInterval ->
+    arr = []
+    for d, index in walkingBirds
+      el = d.el
+      if el.flyFlag is true
+        group = d.group
+        pos = group.translate()
+        bottom = d.el.bottom() * group.scale()
+        y = bottom + pos.y
+        up = 30
+        if y >= height - up
+          arr.push(d)
+          el.fly(true)
+          el.flyFlag = false
+          group.rotate(0)
+          pos.y = y - bottom + up
+          group.translate(pos, 500)
+        else
+          pos.x += d.a / 35 * 1.2
+          pos.y += 2
+          group.translate(pos)
+      else
+        arr.push(d)
+
+    if arr.length is walkingBirds.length
+      clearInterval(iid)
+      # console.log('done')
+  , 33
 
 # =============================
 openBirds = (svg) ->
@@ -73,8 +104,6 @@ openBirds = (svg) ->
 
 # =============================
 start = ->
-  width = window.innerWidth
-  height = window.innerHeight
   initX = 200
   force = undefined
 

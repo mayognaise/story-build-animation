@@ -1,12 +1,12 @@
-time = 500
-upTime = 400
-downTime = 800
-wingOrigin = {x: 253, y: 253}
+BASE_TIME = 500
+UP_TIME = 400
+DOWN_TIME = 800
+WING_ORIGIN = {x: 253, y: 253}
 # ================================================
 class WalkingBird extends BaseView
   constructor: (@parent, @id, @type, @data) ->
     @y = 0
-    @group = new GroupView(@parent, @id, _.clone(wingOrigin))
+    @group = new GroupView(@parent, @id, _.clone(WING_ORIGIN))
     @group.addType(@type)
     @group.hide()
     @elem = @group.target()
@@ -25,6 +25,9 @@ class WalkingBird extends BaseView
     @resize()
     @group.show()
     # @loop()
+
+  bottom: ->
+    180
 
   loop: ->
     @open =>
@@ -54,10 +57,10 @@ class WalkingBird extends BaseView
             @back.show()
             @mouth.show()
             if onComplete then onComplete(@)
-          , time/2
+          , BASE_TIME/2
         , 100
-      , time
-    , time
+      , BASE_TIME
+    , BASE_TIME
     @
 
   close: (onComplete) ->
@@ -74,7 +77,7 @@ class WalkingBird extends BaseView
       if onComplete
         setTimeout ->
           onComplete()
-        , time/2
+        , BASE_TIME/2
     , 100
     @
 
@@ -87,7 +90,7 @@ class WalkingBird extends BaseView
       @back.up()
       @y = 0
       up = false
-      duration = upTime
+      duration = UP_TIME
     else
       @wings.down()
       @body.down()
@@ -95,7 +98,7 @@ class WalkingBird extends BaseView
       @back.down()
       @y = 100 + ~~(Math.random()*200)
       up = true
-      duration = downTime
+      duration = DOWN_TIME
     @resize(duration)
     @iid = setTimeout =>
       if @flyFlag then @fly(up)
@@ -108,13 +111,13 @@ class WalkingBirdBack
     @back = new PolygonView(@elem, @data, 'back', {x:252, y:262})
     @hide()
   show: ->
-    @back.show().scale(0)
+    @back.show().scale(0.1)
   hide: ->
-    @back.hide().scale(0)
+    @back.hide().scale(0.1)
   up: ->
-    @back.scale(0, upTime)
+    @back.scale(0.1, UP_TIME)
   down: ->
-    @back.scale(1, downTime)
+    @back.scale(1, DOWN_TIME)
 
 # ================================================
 class WalkingBirdBody
@@ -126,13 +129,13 @@ class WalkingBirdBody
     @body_fly = new PathView(@elem, @data, 'body_fly')
     @body_fly.hide()
   up: ->
-    @body.show().changeD(@body_after.d(), upTime)
+    @body.show().changeD(@body_after.d(), UP_TIME)
   down: ->
-    @body.show().changeD(@body_fly.d(), downTime)
+    @body.show().changeD(@body_fly.d(), DOWN_TIME)
   show: ->
-    @body.show().changeD(@body_after.d(), time/2)
+    @body.show().changeD(@body_after.d(), BASE_TIME/2)
   hide: ->
-    @body.show().changeD(@body.d(), time/2)
+    @body.show().changeD(@body.d(), BASE_TIME/2)
     setTimeout =>
       @body.hide()
     , 100
@@ -145,11 +148,11 @@ class WalkingBirdEye
     @black_eye = new CircleView(@elem, @data, 'black_eye', 17, {x: 307, y: 270})
     @black_eye.hide().circleScale(0.3)
   show: ->
-    @white_eye.show().circleScale(1, time/2)
-    @black_eye.show().circleScale(1, time/2)
+    @white_eye.show().circleScale(1, BASE_TIME/2)
+    @black_eye.show().circleScale(1, BASE_TIME/2)
   hide: ->
-    @white_eye.show().circleScale(0.3, time/2)
-    @black_eye.show().circleScale(0.3, time/2)
+    @white_eye.show().circleScale(0.3, BASE_TIME/2)
+    @black_eye.show().circleScale(0.3, BASE_TIME/2)
     setTimeout =>
       @white_eye.hide()
       @black_eye.hide()
@@ -180,13 +183,13 @@ class WalkingBirdLeg
     @leg = new PathView(@elem, @data, "#{@side}_leg", origin)
     @hide()
   show: ->
-    @leg.show().scale(1,time/2)
+    @leg.show().scale(1,BASE_TIME/2)
   hide: ->
     @leg.hide().scale(0)
   up: ->
-    @leg.rotate(0, upTime)
+    @leg.rotate(0, UP_TIME)
   down: ->
-    @leg.rotate((if @side is 'left' then 30 else -30), downTime)
+    @leg.rotate((if @side is 'left' then 30 else -30), DOWN_TIME)
 
 
 # ================================================
@@ -199,13 +202,13 @@ class WalkingBirdWings
     @rightWing.open()
     setTimeout =>
       @showBelow()
-    , time
+    , BASE_TIME
   close: ->
     @hideBelow()
     setTimeout =>
       @leftWing.close()
       @rightWing.close()
-    , time/2
+    , BASE_TIME/2
   hideBelow: ->
     @leftWing.hideBelow()
     @rightWing.hideBelow()  
@@ -223,9 +226,9 @@ class WalkingBirdWings
 class WalkingBirdWing
   constructor: (@elem, @data, @side) ->
     gap = 40
-    origin = if @side is 'left' then {x: wingOrigin.x - gap, y: wingOrigin.y - gap} else {x: wingOrigin.x + gap, y: wingOrigin.y - gap}
+    origin = if @side is 'left' then {x: WING_ORIGIN.x - gap, y: WING_ORIGIN.y - gap} else {x: WING_ORIGIN.x + gap, y: WING_ORIGIN.y - gap}
     @group = new GroupView(@elem, "#{@side}_wing_group", origin)
-    # @group = new GroupView(@elem, "#{@side}_wing_group", _.clone(wingOrigin))
+    # @group = new GroupView(@elem, "#{@side}_wing_group", _.clone(WING_ORIGIN))
     target = @group.target()
 
     @wing = new PathView(target, @data, "#{@side}_wing")
@@ -233,23 +236,23 @@ class WalkingBirdWing
     @wing.hide()
     @wingAfter.hide()
 
-    @leaf = new PathView(target, @data, "#{@side}_leaf", _.clone(wingOrigin))
+    @leaf = new PathView(target, @data, "#{@side}_leaf", _.clone(WING_ORIGIN))
     @leaf.rotate(@rotation(),0)
 
   rotation: ->
     if @side is 'left' then -135 else 135
   open: ->
-    @leaf.rotate(0,time)
+    @leaf.rotate(0,BASE_TIME)
   close: ->
-    @leaf.rotate(@rotation(),time/2)
+    @leaf.rotate(@rotation(),BASE_TIME/2)
   showBelow: ->
-    @wing.show().changeD(@wingAfter.d(), time/2)
+    @wing.show().changeD(@wingAfter.d(), BASE_TIME/2)
   hideBelow: ->
-    @wing.show().changeD(@wing.d(), time/2)
+    @wing.show().changeD(@wing.d(), BASE_TIME/2)
     setTimeout =>
       @wing.hide()
-    , time/2
+    , BASE_TIME/2
   up: ->
-    @group.rotate(0, upTime)
+    @group.rotate(0, UP_TIME)
   down: ->
-    @group.rotate((if @side is 'left' then 20 else -20), downTime)
+    @group.rotate((if @side is 'left' then 22.5 else -22.5), DOWN_TIME)

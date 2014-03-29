@@ -1,6 +1,4 @@
 class PartsView
-  constructor: (@parent, @data, @id) ->
-
   show: ->
     @elem().classed("hide", false)
     @
@@ -8,6 +6,11 @@ class PartsView
   hide: ->
     @elem().classed("hide", true)
     @
+
+  id: (id) ->
+    if id isnt undefined
+      @_id = id
+    @_id
 
   addType: (type) ->
     @elem().attr('type', type)
@@ -17,7 +20,7 @@ class PartsView
 
   rotation: ->
     if @origin
-      @origin.deg
+      @origin.deg or 0
     else
       0
 
@@ -39,17 +42,23 @@ class PartsView
       @
     else
       if @origin
-        {x:@origin.x,y:@origin.y}
+        {x:@origin.x or 0,y:@origin.y or 0}
       else
         {x:0,y:0}
 
   scale: (scale, sec = 0) ->
-    @origin ?= {}
-    @origin.scale = scale
-    @elem().transition()
-      .duration(sec)
-      .attr('transform', @transform(@origin))
-    @
+    if scale
+      @origin ?= {}
+      @origin.scale = scale
+      @elem().transition()
+        .duration(sec)
+        .attr('transform', @transform(@origin))
+      @
+    else
+      if @origin
+        @origin.scale or 1
+      else
+        1
 
   elem: (elem) ->
     if elem isnt undefined
@@ -58,7 +67,7 @@ class PartsView
 
   path: ->
     unless @_path
-      el = d3.select(@data).select("##{@id}")
+      el = d3.select(@data).select("##{@klass}")
       @_path = el.select(el[0][0].firstElementChild.nodeName)
     @_path
 

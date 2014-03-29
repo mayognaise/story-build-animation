@@ -1,5 +1,5 @@
 (function() {
-  var BaseView, CircleView, GroupView, PartsView, PathView, PolygonView, Tree, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, downTime, fly, init, loadSVG, openBirds, start, time, upTime, walkingBirdData, walkingBirdScale, walkingBirds, wingOrigin,
+  var BASE_TIME, BaseView, CircleView, DOWN_TIME, GroupView, PartsView, PathView, PolygonView, Tree, UP_TIME, WING_ORIGIN, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, fly, height, init, loadSVG, openBirds, start, walkingBirdData, walkingBirdScale, walkingBirds, width,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -49,11 +49,7 @@
   })();
 
   PartsView = (function() {
-    function PartsView(parent, data, id) {
-      this.parent = parent;
-      this.data = data;
-      this.id = id;
-    }
+    function PartsView() {}
 
     PartsView.prototype.show = function() {
       this.elem().classed("hide", false);
@@ -63,6 +59,13 @@
     PartsView.prototype.hide = function() {
       this.elem().classed("hide", true);
       return this;
+    };
+
+    PartsView.prototype.id = function(id) {
+      if (id !== void 0) {
+        this._id = id;
+      }
+      return this._id;
     };
 
     PartsView.prototype.addType = function(type) {
@@ -75,7 +78,7 @@
 
     PartsView.prototype.rotation = function() {
       if (this.origin) {
-        return this.origin.deg;
+        return this.origin.deg || 0;
       } else {
         return 0;
       }
@@ -107,8 +110,8 @@
       } else {
         if (this.origin) {
           return {
-            x: this.origin.x,
-            y: this.origin.y
+            x: this.origin.x || 0,
+            y: this.origin.y || 0
           };
         } else {
           return {
@@ -123,12 +126,20 @@
       if (sec == null) {
         sec = 0;
       }
-      if (this.origin == null) {
-        this.origin = {};
+      if (scale) {
+        if (this.origin == null) {
+          this.origin = {};
+        }
+        this.origin.scale = scale;
+        this.elem().transition().duration(sec).attr('transform', this.transform(this.origin));
+        return this;
+      } else {
+        if (this.origin) {
+          return this.origin.scale || 1;
+        } else {
+          return 1;
+        }
       }
-      this.origin.scale = scale;
-      this.elem().transition().duration(sec).attr('transform', this.transform(this.origin));
-      return this;
     };
 
     PartsView.prototype.elem = function(elem) {
@@ -141,7 +152,7 @@
     PartsView.prototype.path = function() {
       var el;
       if (!this._path) {
-        el = d3.select(this.data).select("#" + this.id);
+        el = d3.select(this.data).select("#" + this.klass);
         this._path = el.select(el[0][0].firstElementChild.nodeName);
       }
       return this._path;
@@ -168,13 +179,14 @@
   PathView = (function(_super) {
     __extends(PathView, _super);
 
-    function PathView(parent, data, id, origin) {
+    function PathView(parent, data, klass, origin) {
       var g, tgt;
       this.parent = parent;
       this.data = data;
-      this.id = id;
+      this.klass = klass;
       this.origin = origin;
-      g = this.parent.append('g').attr('id', this.id);
+      this.id("" + this.klass + "_" + ((new Date).getTime()));
+      g = this.parent.append('g').attr('id', this.id()).attr('class', this.klass);
       if (this.origin) {
         g.attr('transform', this.transform(this.origin));
         tgt = g.append('g').attr('transform', this.transform({
@@ -213,14 +225,15 @@
   CircleView = (function(_super) {
     __extends(CircleView, _super);
 
-    function CircleView(parent, data, id, r, origin) {
+    function CircleView(parent, data, klass, r, origin) {
       var g, tgt;
       this.parent = parent;
       this.data = data;
-      this.id = id;
+      this.klass = klass;
       this.r = r;
       this.origin = origin;
-      g = this.parent.append('g').attr('id', this.id);
+      this.id("" + this.klass + "_" + ((new Date).getTime()));
+      g = this.parent.append('g').attr('id', this.id()).attr('class', this.klass);
       if (this.origin) {
         g.attr('transform', this.transform(this.origin));
         tgt = g.append('g');
@@ -256,13 +269,14 @@
   PolygonView = (function(_super) {
     __extends(PolygonView, _super);
 
-    function PolygonView(parent, data, id, origin) {
+    function PolygonView(parent, data, klass, origin) {
       var g, tgt;
       this.parent = parent;
       this.data = data;
-      this.id = id;
+      this.klass = klass;
       this.origin = origin;
-      g = this.parent.append('g').attr('id', this.id);
+      this.id("" + this.klass + "_" + ((new Date).getTime()));
+      g = this.parent.append('g').attr('id', this.id()).attr('class', this.klass);
       if (this.origin) {
         g.attr('transform', this.transform(this.origin));
         tgt = g.append('g').attr('transform', this.transform({
@@ -293,12 +307,13 @@
   GroupView = (function(_super) {
     __extends(GroupView, _super);
 
-    function GroupView(parent, id, origin) {
+    function GroupView(parent, klass, origin) {
       var g, tgt;
       this.parent = parent;
+      this.klass = klass;
       this.origin = origin;
-      this.id("" + id + "_" + ((new Date).getTime()));
-      g = this.parent.append('g').attr('id', this.id()).attr('class', id);
+      this.id("" + this.klass + "_" + ((new Date).getTime()));
+      g = this.parent.append('g').attr('id', this.id()).attr('class', this.klass);
       if (this.origin) {
         g.attr('transform', this.transform(this.origin));
         tgt = g.append('g').attr('transform', this.transform({
@@ -312,13 +327,6 @@
       this.elem(g);
     }
 
-    GroupView.prototype.id = function(id) {
-      if (id !== void 0) {
-        this._id = id;
-      }
-      return this._id;
-    };
-
     GroupView.prototype.target = function() {
       return this._target;
     };
@@ -327,13 +335,13 @@
 
   })(PartsView);
 
-  time = 500;
+  BASE_TIME = 500;
 
-  upTime = 400;
+  UP_TIME = 400;
 
-  downTime = 800;
+  DOWN_TIME = 800;
 
-  wingOrigin = {
+  WING_ORIGIN = {
     x: 253,
     y: 253
   };
@@ -347,7 +355,7 @@
       this.type = type;
       this.data = data;
       this.y = 0;
-      this.group = new GroupView(this.parent, this.id, _.clone(wingOrigin));
+      this.group = new GroupView(this.parent, this.id, _.clone(WING_ORIGIN));
       this.group.addType(this.type);
       this.group.hide();
       this.elem = this.group.target();
@@ -366,6 +374,10 @@
       this.eye = new WalkingBirdEye(this.elem, this.data);
       this.resize();
       return this.group.show();
+    };
+
+    WalkingBird.prototype.bottom = function() {
+      return 180;
     };
 
     WalkingBird.prototype.loop = function() {
@@ -408,11 +420,11 @@
                 if (onComplete) {
                   return onComplete(_this);
                 }
-              }, time / 2);
+              }, BASE_TIME / 2);
             }, 100);
-          }, time);
+          }, BASE_TIME);
         };
-      })(this), time);
+      })(this), BASE_TIME);
       return this;
     };
 
@@ -431,7 +443,7 @@
           if (onComplete) {
             return setTimeout(function() {
               return onComplete();
-            }, time / 2);
+            }, BASE_TIME / 2);
           }
         };
       })(this), 100);
@@ -450,7 +462,7 @@
         this.back.up();
         this.y = 0;
         up = false;
-        duration = upTime;
+        duration = UP_TIME;
       } else {
         this.wings.down();
         this.body.down();
@@ -458,7 +470,7 @@
         this.back.down();
         this.y = 100 + ~~(Math.random() * 200);
         up = true;
-        duration = downTime;
+        duration = DOWN_TIME;
       }
       this.resize(duration);
       this.iid = setTimeout((function(_this) {
@@ -487,19 +499,19 @@
     }
 
     WalkingBirdBack.prototype.show = function() {
-      return this.back.show().scale(0);
+      return this.back.show().scale(0.1);
     };
 
     WalkingBirdBack.prototype.hide = function() {
-      return this.back.hide().scale(0);
+      return this.back.hide().scale(0.1);
     };
 
     WalkingBirdBack.prototype.up = function() {
-      return this.back.scale(0, upTime);
+      return this.back.scale(0.1, UP_TIME);
     };
 
     WalkingBirdBack.prototype.down = function() {
-      return this.back.scale(1, downTime);
+      return this.back.scale(1, DOWN_TIME);
     };
 
     return WalkingBirdBack;
@@ -519,19 +531,19 @@
     }
 
     WalkingBirdBody.prototype.up = function() {
-      return this.body.show().changeD(this.body_after.d(), upTime);
+      return this.body.show().changeD(this.body_after.d(), UP_TIME);
     };
 
     WalkingBirdBody.prototype.down = function() {
-      return this.body.show().changeD(this.body_fly.d(), downTime);
+      return this.body.show().changeD(this.body_fly.d(), DOWN_TIME);
     };
 
     WalkingBirdBody.prototype.show = function() {
-      return this.body.show().changeD(this.body_after.d(), time / 2);
+      return this.body.show().changeD(this.body_after.d(), BASE_TIME / 2);
     };
 
     WalkingBirdBody.prototype.hide = function() {
-      this.body.show().changeD(this.body.d(), time / 2);
+      this.body.show().changeD(this.body.d(), BASE_TIME / 2);
       return setTimeout((function(_this) {
         return function() {
           return _this.body.hide();
@@ -560,13 +572,13 @@
     }
 
     WalkingBirdEye.prototype.show = function() {
-      this.white_eye.show().circleScale(1, time / 2);
-      return this.black_eye.show().circleScale(1, time / 2);
+      this.white_eye.show().circleScale(1, BASE_TIME / 2);
+      return this.black_eye.show().circleScale(1, BASE_TIME / 2);
     };
 
     WalkingBirdEye.prototype.hide = function() {
-      this.white_eye.show().circleScale(0.3, time / 2);
-      this.black_eye.show().circleScale(0.3, time / 2);
+      this.white_eye.show().circleScale(0.3, BASE_TIME / 2);
+      this.black_eye.show().circleScale(0.3, BASE_TIME / 2);
       return setTimeout((function(_this) {
         return function() {
           _this.white_eye.hide();
@@ -627,7 +639,7 @@
     }
 
     WalkingBirdLeg.prototype.show = function() {
-      return this.leg.show().scale(1, time / 2);
+      return this.leg.show().scale(1, BASE_TIME / 2);
     };
 
     WalkingBirdLeg.prototype.hide = function() {
@@ -635,11 +647,11 @@
     };
 
     WalkingBirdLeg.prototype.up = function() {
-      return this.leg.rotate(0, upTime);
+      return this.leg.rotate(0, UP_TIME);
     };
 
     WalkingBirdLeg.prototype.down = function() {
-      return this.leg.rotate((this.side === 'left' ? 30 : -30), downTime);
+      return this.leg.rotate((this.side === 'left' ? 30 : -30), DOWN_TIME);
     };
 
     return WalkingBirdLeg;
@@ -661,7 +673,7 @@
         return function() {
           return _this.showBelow();
         };
-      })(this), time);
+      })(this), BASE_TIME);
     };
 
     WalkingBirdWings.prototype.close = function() {
@@ -671,7 +683,7 @@
           _this.leftWing.close();
           return _this.rightWing.close();
         };
-      })(this), time / 2);
+      })(this), BASE_TIME / 2);
     };
 
     WalkingBirdWings.prototype.hideBelow = function() {
@@ -706,11 +718,11 @@
       this.side = side;
       gap = 40;
       origin = this.side === 'left' ? {
-        x: wingOrigin.x - gap,
-        y: wingOrigin.y - gap
+        x: WING_ORIGIN.x - gap,
+        y: WING_ORIGIN.y - gap
       } : {
-        x: wingOrigin.x + gap,
-        y: wingOrigin.y - gap
+        x: WING_ORIGIN.x + gap,
+        y: WING_ORIGIN.y - gap
       };
       this.group = new GroupView(this.elem, "" + this.side + "_wing_group", origin);
       target = this.group.target();
@@ -718,7 +730,7 @@
       this.wingAfter = new PathView(target, this.data, "" + this.side + "_wing_after");
       this.wing.hide();
       this.wingAfter.hide();
-      this.leaf = new PathView(target, this.data, "" + this.side + "_leaf", _.clone(wingOrigin));
+      this.leaf = new PathView(target, this.data, "" + this.side + "_leaf", _.clone(WING_ORIGIN));
       this.leaf.rotate(this.rotation(), 0);
     }
 
@@ -731,32 +743,32 @@
     };
 
     WalkingBirdWing.prototype.open = function() {
-      return this.leaf.rotate(0, time);
+      return this.leaf.rotate(0, BASE_TIME);
     };
 
     WalkingBirdWing.prototype.close = function() {
-      return this.leaf.rotate(this.rotation(), time / 2);
+      return this.leaf.rotate(this.rotation(), BASE_TIME / 2);
     };
 
     WalkingBirdWing.prototype.showBelow = function() {
-      return this.wing.show().changeD(this.wingAfter.d(), time / 2);
+      return this.wing.show().changeD(this.wingAfter.d(), BASE_TIME / 2);
     };
 
     WalkingBirdWing.prototype.hideBelow = function() {
-      this.wing.show().changeD(this.wing.d(), time / 2);
+      this.wing.show().changeD(this.wing.d(), BASE_TIME / 2);
       return setTimeout((function(_this) {
         return function() {
           return _this.wing.hide();
         };
-      })(this), time / 2);
+      })(this), BASE_TIME / 2);
     };
 
     WalkingBirdWing.prototype.up = function() {
-      return this.group.rotate(0, upTime);
+      return this.group.rotate(0, UP_TIME);
     };
 
     WalkingBirdWing.prototype.down = function() {
-      return this.group.rotate((this.side === 'left' ? 20 : -20), downTime);
+      return this.group.rotate((this.side === 'left' ? 22.5 : -22.5), DOWN_TIME);
     };
 
     return WalkingBirdWing;
@@ -785,7 +797,8 @@
     }
 
     Tree.prototype.restart = function() {
-      var link, node, walkingBirdData, walkingBirdScale;
+      var link, node, typeCount, walkingBirdData, walkingBirdScale;
+      typeCount = this.typeCount;
       walkingBirdData = this.walkingBirdData;
       walkingBirdScale = this.walkingBirdScale;
       link = this.link().data(this.links());
@@ -936,6 +949,10 @@
 
   })();
 
+  width = window.innerWidth;
+
+  height = window.innerHeight;
+
   walkingBirdData = void 0;
 
   walkingBirdScale = .1;
@@ -943,13 +960,39 @@
   walkingBirds = [];
 
   fly = function() {
-    var d, index, _i, _len, _results;
-    _results = [];
-    for (index = _i = 0, _len = walkingBirds.length; _i < _len; index = ++_i) {
-      d = walkingBirds[index];
-      _results.push(console.log(d.type));
-    }
-    return _results;
+    var iid;
+    return iid = setInterval(function() {
+      var arr, bottom, d, el, group, index, pos, up, y, _i, _len;
+      arr = [];
+      for (index = _i = 0, _len = walkingBirds.length; _i < _len; index = ++_i) {
+        d = walkingBirds[index];
+        el = d.el;
+        if (el.flyFlag === true) {
+          group = d.group;
+          pos = group.translate();
+          bottom = d.el.bottom() * group.scale();
+          y = bottom + pos.y;
+          up = 30;
+          if (y >= height - up) {
+            arr.push(d);
+            el.fly(true);
+            el.flyFlag = false;
+            group.rotate(0);
+            pos.y = y - bottom + up;
+            group.translate(pos, 500);
+          } else {
+            pos.x += d.a / 35 * 1.2;
+            pos.y += 2;
+            group.translate(pos);
+          }
+        } else {
+          arr.push(d);
+        }
+      }
+      if (arr.length === walkingBirds.length) {
+        return clearInterval(iid);
+      }
+    }, 33);
   };
 
   openBirds = function(svg) {
@@ -1021,9 +1064,7 @@
   };
 
   start = function() {
-    var force, group, height, initX, svg, tree, width;
-    width = window.innerWidth;
-    height = window.innerHeight;
+    var force, group, initX, svg, tree;
     initX = 200;
     force = void 0;
     svg = d3.select('body').append('svg').attr('width', width).attr('height', height);
