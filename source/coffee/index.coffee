@@ -20,7 +20,7 @@ tree = undefined
 treeGroup = undefined
 
 walkingBirdId = 'walking_bird'
-walkingBirdData = undefined
+
 # =============================
 flyBird = (d) ->
   el = d.el
@@ -73,43 +73,45 @@ animateBirds = ->
   arr = []
   parent = svg.append('g')
   svg.selectAll(".#{walkingBirdId}_group") 
-    .each( (d) ->
+    .each((d) ->
       group = new GroupView(parent, 'wbg')
       group.translate(d)
-      wb = new WalkingBird(group.elem(), walkingBirdId, d.type, svgData[walkingBirdId])
       group.scale(initScale).rotate(d.rotation)
-      d.a = ~~(Math.random()*20) + 15
-      d.el = wb
       d.group = group
+      d.a = ~~(Math.random()*20) + 15
+      d.el = new WalkingBird(group.elem(), walkingBirdId, d.type, svgData[walkingBirdId])
       arr.push(d)
     )
     .remove()
 
-  count = 0
-  end = 120
-  open = 20
-  iid = setInterval ->
-    newArr = []
-    for d, index in arr
-      group = d.group
-      pos = group.translate()
-      if count is open and index % 3 is 0
-        d.openCount = open + ~~(Math.random()*30)
-      if count is d.openCount
-        openBird(d, count, open)
-      else
-        newArr.push(d)
-      pos.x -= d.a / 4
-      pos.y += Math.pow(1.04,count)
-      pos.deg = (group.rotation() + d.a) % 360
-      group.translate(pos)
-    arr = newArr
-    if ++count > end
-      clearInterval(iid)
+  if arr.length > 0
+    count = 0
+    end = 120
+    open = 20
+    iid = setInterval ->
+      newArr = []
       for d, index in arr
         group = d.group
-        group.remove()
-  , 33
+        pos = group.translate()
+        if count is open and index % 3 is 0
+          d.openCount = open + ~~(Math.random()*30)
+        if count is d.openCount
+          openBird(d, count, open)
+        else
+          newArr.push(d)
+        pos.x -= d.a / 4
+        pos.y += Math.pow(1.04,count)
+        pos.deg = (group.rotation() + d.a) % 360
+        group.translate(pos)
+      arr = newArr
+      if ++count > end
+        clearInterval(iid)
+        for d, index in arr
+          group = d.group
+          group.remove()
+    , 33
+  else
+    console.log('no bird')
 
 # =============================
 wind = ->
@@ -117,7 +119,6 @@ wind = ->
   end = 5000
   interval = 600
   iid = setInterval ->
-    tree.wind(Math.random()*60 - 30)
     if ++count > end / interval
       tree.wind(50)
       animateBirds()
@@ -128,6 +129,9 @@ wind = ->
         .each 'end', ->
           tree.stop()
           treeGroup.remove()
+    else
+      ran = Math.random()*60 - 30
+      tree.wind(ran, ran * -2)
   , interval
 
 # =============================
@@ -136,10 +140,17 @@ start = ->
     .attr('width', width)
     .attr('height', height)
   
+  leafData =
+    klass: WalkingBird
+    data: svgData[walkingBirdId]
+    scale: initScale
+    id: walkingBirdId
+  
   treeGroup = svg.append('g').attr('id', 'tree')
-  tree = new Tree(treeGroup, initX, height, svgData[walkingBirdId], initScale)
+  tree = new Tree(treeGroup, initX, height, leafData)
   tree.createBranch(setTimeout(wind, 5000))
 
+# =============================
 loadSVG = (id, onComplete) ->
   d3.xml "svg/#{id}.svg", 'image/svg+xml', (data) -> if onComplete then onComplete(data)
 

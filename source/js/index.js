@@ -1,5 +1,5 @@
 (function() {
-  var BASE_TIME, BaseView, CircleView, DOWN_TIME, GroupView, PartsView, PathView, PolygonView, Tree, UP_TIME, WING_ORIGIN, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, animateBirds, flyBird, height, init, initScale, initX, loadSVG, loadSVGs, openBird, start, svg, svgData, tree, treeGroup, walkingBirdData, walkingBirdId, width, wind,
+  var BASE_TIME, BaseView, CircleView, DOWN_TIME, GroupView, PartsView, PathView, PolygonView, Tree, UP_TIME, WING_ORIGIN, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, animateBirds, flyBird, height, init, initScale, initX, loadSVG, loadSVGs, openBird, start, svg, svgData, tree, treeGroup, walkingBirdId, width, wind,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -7,7 +7,7 @@
     function BaseView(parent, id, type, data) {
       this.parent = parent;
       this.id = id;
-      this.type = type;
+      this.type = type != null ? type : 1;
       this.data = data;
       this.width = window.innerWidth;
       this.height = window.innerHeight;
@@ -776,12 +776,11 @@
   })();
 
   Tree = (function() {
-    function Tree(elem, width, height, walkingBirdData, walkingBirdScale) {
+    function Tree(elem, width, height, alternateObj) {
       this.elem = elem;
       this.width = width;
       this.height = height;
-      this.walkingBirdData = walkingBirdData;
-      this.walkingBirdScale = walkingBirdScale;
+      this.alternateObj = alternateObj;
       this._force = d3.layout.force().size([this.width * 2, this.height * 2 / 3]).nodes([
         {
           x: this.width,
@@ -797,21 +796,21 @@
     }
 
     Tree.prototype.restart = function() {
-      var link, node, walkingBirdData, walkingBirdScale;
-      walkingBirdData = this.walkingBirdData;
-      walkingBirdScale = this.walkingBirdScale;
+      var alternateObj, link, node;
+      alternateObj = this.alternateObj;
       link = this.link().data(this.links());
       link.enter().insert('line', '.node').attr('class', 'link');
       node = this.node().data(this.nodes());
       node.enter().insert('g', '.cursor').attr('class', 'node').each(function(d) {
-        var el, wb, wbg;
+        var el, group, obj;
         el = d3.select(this);
-        if (d.last === true && Math.random() < .05) {
-          el.classed('walking_bird_group', true);
-          wbg = new GroupView(el, 'wbg');
-          wb = new WalkingBird(wbg.elem(), 'walking_bird', d.type, walkingBirdData);
-          wbg.scale(walkingBirdScale).rotate(d.rotation);
-          return d.wbg = wbg;
+        if (alternateObj && d.last === true && Math.random() < .05) {
+          el.classed(alternateObj.group || ("" + alternateObj.id + "_group"), true);
+          group = new GroupView(el, 'group');
+          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data);
+          group.scale(alternateObj.scale || 1).rotate(d.rotation);
+          d.group = group;
+          return d.el = obj;
         } else {
           return el.append('circle').attr('r', 1);
         }
@@ -873,7 +872,7 @@
       }, target);
     };
 
-    Tree.prototype.wind = function(ran) {
+    Tree.prototype.wind = function(ran, rotation) {
       var nodes;
       if (ran == null) {
         ran = 20;
@@ -881,9 +880,8 @@
       nodes = this.nodes();
       nodes.forEach(function(node) {
         node.x += Math.random() * ran;
-        if (node.wbg) {
-          node.rotation = ~~(Math.random() * 160) - 80;
-          return node.wbg.rotate(node.rotation, 200);
+        if (node.group && rotation !== void 0) {
+          return node.group.rotate(rotation, 200);
         }
       });
       return this.restart();
@@ -966,8 +964,6 @@
 
   walkingBirdId = 'walking_bird';
 
-  walkingBirdData = void 0;
-
   flyBird = function(d) {
     var el, iid;
     el = d.el;
@@ -1027,51 +1023,54 @@
     arr = [];
     parent = svg.append('g');
     svg.selectAll("." + walkingBirdId + "_group").each(function(d) {
-      var group, wb;
+      var group;
       group = new GroupView(parent, 'wbg');
       group.translate(d);
-      wb = new WalkingBird(group.elem(), walkingBirdId, d.type, svgData[walkingBirdId]);
       group.scale(initScale).rotate(d.rotation);
-      d.a = ~~(Math.random() * 20) + 15;
-      d.el = wb;
       d.group = group;
+      d.a = ~~(Math.random() * 20) + 15;
+      d.el = new WalkingBird(group.elem(), walkingBirdId, d.type, svgData[walkingBirdId]);
       return arr.push(d);
     }).remove();
-    count = 0;
-    end = 120;
-    open = 20;
-    return iid = setInterval(function() {
-      var d, group, index, newArr, pos, _i, _j, _len, _len1, _results;
-      newArr = [];
-      for (index = _i = 0, _len = arr.length; _i < _len; index = ++_i) {
-        d = arr[index];
-        group = d.group;
-        pos = group.translate();
-        if (count === open && index % 3 === 0) {
-          d.openCount = open + ~~(Math.random() * 30);
-        }
-        if (count === d.openCount) {
-          openBird(d, count, open);
-        } else {
-          newArr.push(d);
-        }
-        pos.x -= d.a / 4;
-        pos.y += Math.pow(1.04, count);
-        pos.deg = (group.rotation() + d.a) % 360;
-        group.translate(pos);
-      }
-      arr = newArr;
-      if (++count > end) {
-        clearInterval(iid);
-        _results = [];
-        for (index = _j = 0, _len1 = arr.length; _j < _len1; index = ++_j) {
+    if (arr.length > 0) {
+      count = 0;
+      end = 120;
+      open = 20;
+      return iid = setInterval(function() {
+        var d, group, index, newArr, pos, _i, _j, _len, _len1, _results;
+        newArr = [];
+        for (index = _i = 0, _len = arr.length; _i < _len; index = ++_i) {
           d = arr[index];
           group = d.group;
-          _results.push(group.remove());
+          pos = group.translate();
+          if (count === open && index % 3 === 0) {
+            d.openCount = open + ~~(Math.random() * 30);
+          }
+          if (count === d.openCount) {
+            openBird(d, count, open);
+          } else {
+            newArr.push(d);
+          }
+          pos.x -= d.a / 4;
+          pos.y += Math.pow(1.04, count);
+          pos.deg = (group.rotation() + d.a) % 360;
+          group.translate(pos);
         }
-        return _results;
-      }
-    }, 33);
+        arr = newArr;
+        if (++count > end) {
+          clearInterval(iid);
+          _results = [];
+          for (index = _j = 0, _len1 = arr.length; _j < _len1; index = ++_j) {
+            d = arr[index];
+            group = d.group;
+            _results.push(group.remove());
+          }
+          return _results;
+        }
+      }, 33);
+    } else {
+      return console.log('no bird');
+    }
   };
 
   wind = function() {
@@ -1080,7 +1079,7 @@
     end = 5000;
     interval = 600;
     return iid = setInterval(function() {
-      tree.wind(Math.random() * 60 - 30);
+      var ran;
       if (++count > end / interval) {
         tree.wind(50);
         animateBirds();
@@ -1089,14 +1088,24 @@
           tree.stop();
           return treeGroup.remove();
         });
+      } else {
+        ran = Math.random() * 60 - 30;
+        return tree.wind(ran, ran * -2);
       }
     }, interval);
   };
 
   start = function() {
+    var leafData;
     svg = d3.select('body').append('svg').attr('width', width).attr('height', height);
+    leafData = {
+      klass: WalkingBird,
+      data: svgData[walkingBirdId],
+      scale: initScale,
+      id: walkingBirdId
+    };
     treeGroup = svg.append('g').attr('id', 'tree');
-    tree = new Tree(treeGroup, initX, height, svgData[walkingBirdId], initScale);
+    tree = new Tree(treeGroup, initX, height, leafData);
     return tree.createBranch(setTimeout(wind, 5000));
   };
 

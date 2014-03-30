@@ -1,5 +1,5 @@
 class Tree
-  constructor: (@elem, @width, @height, @walkingBirdData, @walkingBirdScale) ->
+  constructor: (@elem, @width, @height, @alternateObj) ->
     @_force = d3.layout.force()
       .size([@width*2, @height*2/3])
       .nodes([{x:@width,y:@height,fixed:true}])
@@ -12,8 +12,7 @@ class Tree
   # typeCount: 0
   restart: ->
     # typeCount = @typeCount
-    walkingBirdData = @walkingBirdData
-    walkingBirdScale = @walkingBirdScale
+    alternateObj = @alternateObj
     link = @link().data(@links())
     link.enter().insert('line', '.node')
       .attr('class', 'link')
@@ -23,13 +22,14 @@ class Tree
       .attr('class', 'node')
       .each (d) ->
         el = d3.select(@)
-        if d.last is true and Math.random() < .05
+        if alternateObj and d.last is true and Math.random() < .05
           # d.type = (typeCount++ % 4) + 1
-          el.classed('walking_bird_group', true)
-          wbg = new GroupView(el, 'wbg')
-          wb = new WalkingBird(wbg.elem(), 'walking_bird', d.type, walkingBirdData)
-          wbg.scale(walkingBirdScale).rotate(d.rotation)
-          d.wbg = wbg
+          el.classed(alternateObj.group or "#{alternateObj.id}_group", true)
+          group = new GroupView(el, 'group')
+          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data)
+          group.scale(alternateObj.scale or 1).rotate(d.rotation)
+          d.group = group
+          d.el = obj
         else
           el.append('circle').attr('r', 1)
     @start()
@@ -68,13 +68,12 @@ class Tree
     target = @nodes()[0]
     @add({x:@width,y:target.y-20}, target)
 
-  wind: (ran = 20) ->
+  wind: (ran = 20, rotation) ->
     nodes = @nodes()
     nodes.forEach (node) ->
       node.x += Math.random() * ran
-      if node.wbg
-        node.rotation = ~~(Math.random()*160)-80
-        node.wbg.rotate(node.rotation, 200)
+      if node.group and rotation isnt undefined
+        node.group.rotate(rotation, 200)
 
     @restart()
 
