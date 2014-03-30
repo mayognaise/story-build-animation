@@ -26,8 +26,11 @@ class WalkingBird extends BaseView
     @group.show()
     # @loop()
 
-  bottom: ->
+  bodyHeight: ->
     180
+
+  bodyWidth: ->
+    505
 
   loop: ->
     @open =>

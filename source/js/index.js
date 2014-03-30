@@ -376,8 +376,12 @@
       return this.group.show();
     };
 
-    WalkingBird.prototype.bottom = function() {
+    WalkingBird.prototype.bodyHeight = function() {
       return 180;
+    };
+
+    WalkingBird.prototype.bodyWidth = function() {
+      return 505;
     };
 
     WalkingBird.prototype.loop = function() {
@@ -807,8 +811,8 @@
         if (alternateObj && d.last === true && Math.random() < .05) {
           el.classed(alternateObj.group || ("" + alternateObj.id + "_group"), true);
           group = new GroupView(el, 'group');
-          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data);
           group.scale(alternateObj.scale || 1).rotate(d.rotation);
+          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data);
           d.group = group;
           return d.el = obj;
         } else {
@@ -875,7 +879,7 @@
     Tree.prototype.wind = function(ran, rotation) {
       var nodes;
       if (ran == null) {
-        ran = 20;
+        ran = 1;
       }
       nodes = this.nodes();
       nodes.forEach(function(node) {
@@ -952,7 +956,7 @@
 
   initX = width / 2;
 
-  initScale = .1;
+  initScale = .1 / 500 * height;
 
   svg = void 0;
 
@@ -972,21 +976,26 @@
     el.flyFlag = true;
     el.fly();
     return iid = setInterval(function() {
-      var bottom, deg, group, pos, up, y;
+      var bodyWidth, bottom, deg, group, pos, up, y;
       if (endFlag) {
         clearInterval(iid);
         return;
       }
       group = d.group;
       pos = group.translate();
-      bottom = d.el.bottom() * group.scale();
+      bottom = d.el.bodyHeight() * group.scale();
+      bodyWidth = d.el.bodyWidth() * group.scale();
       y = bottom + pos.y;
-      up = 30;
-      if (y >= height - up) {
+      up = 50;
+      if (y > height || pos.x > width + bodyWidth) {
+        clearInterval(iid);
+        el.flyFlag = false;
+        return group.remove();
+      } else if (y >= height - up) {
         el.fly(true);
         el.flyFlag = false;
         group.rotate(0);
-        pos.y = y - bottom + up;
+        pos.y += up;
         group.translate(pos, 500);
         return clearInterval(iid);
       } else {

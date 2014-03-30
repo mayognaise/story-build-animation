@@ -11,7 +11,7 @@ width = window.innerWidth
 height = window.innerHeight
 
 initX = width / 2
-initScale = .1
+initScale = .1 / 500 * height
 
 svg = undefined
 svgData = {}
@@ -34,14 +34,19 @@ flyBird = (d) ->
       return
     group = d.group
     pos = group.translate()
-    bottom = d.el.bottom() * group.scale()
+    bottom = d.el.bodyHeight() * group.scale()
+    bodyWidth = d.el.bodyWidth() * group.scale()
     y = bottom + pos.y
-    up = 30
-    if y >= height - up
+    up = 50
+    if y > height or pos.x > width + bodyWidth
+      clearInterval(iid)
+      el.flyFlag = false
+      group.remove()
+    else if y >= height - up
       el.fly(true)
       el.flyFlag = false
       group.rotate(0)
-      pos.y = y - bottom + up
+      pos.y += up
       group.translate(pos, 500)
       clearInterval(iid)
     else

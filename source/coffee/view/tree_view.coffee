@@ -26,8 +26,8 @@ class Tree
           # d.type = (typeCount++ % 4) + 1
           el.classed(alternateObj.group or "#{alternateObj.id}_group", true)
           group = new GroupView(el, 'group')
-          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data)
           group.scale(alternateObj.scale or 1).rotate(d.rotation)
+          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data)
           d.group = group
           d.el = obj
         else
@@ -68,7 +68,7 @@ class Tree
     target = @nodes()[0]
     @add({x:@width,y:target.y-20}, target)
 
-  wind: (ran = 20, rotation) ->
+  wind: (ran = 1, rotation) ->
     nodes = @nodes()
     nodes.forEach (node) ->
       node.x += Math.random() * ran
