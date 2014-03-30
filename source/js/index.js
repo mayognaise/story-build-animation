@@ -1,5 +1,5 @@
 (function() {
-  var BASE_TIME, BaseView, CircleView, DOWN_TIME, GroupView, PartsView, PathView, PolygonView, Tree, UP_TIME, WING_ORIGIN, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, animateBirds, flyBird, height, init, initScale, initX, loadSVG, loadSVGs, openBird, start, svg, svgData, tree, treeGroup, walkingBirdId, width, wind,
+  var BASE_TIME, BaseView, CircleView, DOWN_TIME, GroupView, PartsView, PathView, PolygonView, Tree, UP_TIME, WING_ORIGIN, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, animateBirds, endFlag, flyBird, height, init, initScale, initX, kill, loadSVG, loadSVGs, openBird, start, svg, svgData, tree, treeGroup, walkingBirdId, width, wind,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -958,6 +958,8 @@
 
   svgData = {};
 
+  endFlag = false;
+
   tree = void 0;
 
   treeGroup = void 0;
@@ -971,6 +973,10 @@
     el.fly();
     return iid = setInterval(function() {
       var bottom, deg, group, pos, up, y;
+      if (endFlag) {
+        clearInterval(iid);
+        return;
+      }
       group = d.group;
       pos = group.translate();
       bottom = d.el.bottom() * group.scale();
@@ -1004,6 +1010,10 @@
     el = d.el;
     iid = setInterval(function() {
       var group, pos;
+      if (endFlag) {
+        clearInterval(iid);
+        return;
+      }
       group = d.group;
       pos = group.translate();
       pos.x += d.a / 35 * 2;
@@ -1038,6 +1048,10 @@
       open = 20;
       return iid = setInterval(function() {
         var d, group, index, newArr, pos, _i, _j, _len, _len1, _results;
+        if (endFlag) {
+          clearInterval(iid);
+          return;
+        }
         newArr = [];
         for (index = _i = 0, _len = arr.length; _i < _len; index = ++_i) {
           d = arr[index];
@@ -1080,6 +1094,10 @@
     interval = 600;
     return iid = setInterval(function() {
       var ran;
+      if (endFlag) {
+        clearInterval(iid);
+        return;
+      }
       if (++count > end / interval) {
         tree.wind(50);
         animateBirds();
@@ -1106,7 +1124,8 @@
     };
     treeGroup = svg.append('g').attr('id', 'tree');
     tree = new Tree(treeGroup, initX, height, leafData);
-    return tree.createBranch(setTimeout(wind, 5000));
+    tree.createBranch(setTimeout(wind, 5000));
+    return window.test = svg;
   };
 
   loadSVG = function(id, onComplete) {
@@ -1134,6 +1153,13 @@
 
   init = function() {
     return loadSVG([walkingBirdId], start);
+  };
+
+  kill = function() {
+    endFlag = true;
+    if (svg) {
+      return svg.remove();
+    }
   };
 
   init();

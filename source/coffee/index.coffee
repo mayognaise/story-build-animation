@@ -16,6 +16,8 @@ initScale = .1
 svg = undefined
 svgData = {}
 
+endFlag = false
+
 tree = undefined
 treeGroup = undefined
 
@@ -27,6 +29,9 @@ flyBird = (d) ->
   el.flyFlag = true
   el.fly()
   iid = setInterval ->
+    if endFlag
+      clearInterval(iid)
+      return
     group = d.group
     pos = group.translate()
     bottom = d.el.bottom() * group.scale()
@@ -55,6 +60,9 @@ openBird = (d, count, open) ->
   el = d.el
 
   iid = setInterval ->
+    if endFlag
+      clearInterval(iid)
+      return
     group = d.group
     pos = group.translate()
     pos.x += d.a / 35 * 2
@@ -89,6 +97,9 @@ animateBirds = ->
     end = 120
     open = 20
     iid = setInterval ->
+      if endFlag
+        clearInterval(iid)
+        return
       newArr = []
       for d, index in arr
         group = d.group
@@ -119,6 +130,9 @@ wind = ->
   end = 5000
   interval = 600
   iid = setInterval ->
+    if endFlag
+      clearInterval(iid)
+      return
     if ++count > end / interval
       tree.wind(50)
       animateBirds()
@@ -150,6 +164,8 @@ start = ->
   tree = new Tree(treeGroup, initX, height, leafData)
   tree.createBranch(setTimeout(wind, 5000))
 
+  window.test = svg
+
 # =============================
 loadSVG = (id, onComplete) ->
   d3.xml "svg/#{id}.svg", 'image/svg+xml', (data) -> if onComplete then onComplete(data)
@@ -169,4 +185,9 @@ init = ->
   #   .defer(fs.stat, __dirname + "/../package.json")
   #   .defer(fs.stat, __dirname + "/../package2.json")
   #   .await (error, file1, file2) -> console.log(file1, file2)
+
+kill = ->
+  endFlag = true
+  if svg then svg.remove()
+
 init()
