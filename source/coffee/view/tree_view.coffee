@@ -1,7 +1,7 @@
 class Tree
   constructor: (@elem, @width, @height, @walkingBirdData, @walkingBirdScale) ->
     @_force = d3.layout.force()
-      .size([@width*2, @height*2/4])
+      .size([@width*2, @height*2/3])
       .nodes([{x:@width,y:@height,fixed:true}])
       .linkDistance(20) # 20
       .linkStrength(0.5) # 0-1, 1
@@ -11,7 +11,7 @@ class Tree
 
   # typeCount: 0
   restart: ->
-    typeCount = @typeCount
+    # typeCount = @typeCount
     walkingBirdData = @walkingBirdData
     walkingBirdScale = @walkingBirdScale
     link = @link().data(@links())
@@ -74,7 +74,7 @@ class Tree
       node.x += Math.random() * ran
       if node.wbg
         node.rotation = ~~(Math.random()*160)-80
-        node.wbg.rotate(node.rotation)
+        node.wbg.rotate(node.rotation, 200)
 
     @restart()
 

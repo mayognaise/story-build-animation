@@ -112,7 +112,7 @@ gulp.task('coffee', function() {
 });
 
 gulp.task('compile', function() {
-  gulp.src([jsDir + '*.js', '!' + jsDir + 'main.js'])
+  gulp.src(jsDir + '*.js')
     .pipe(include())
     .pipe(gulp.dest(build))
     .pipe(refresh(lr_server));
