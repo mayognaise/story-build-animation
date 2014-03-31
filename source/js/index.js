@@ -876,16 +876,16 @@
       }, target);
     };
 
-    Tree.prototype.wind = function(ran, rotation) {
+    Tree.prototype.wind = function(ran) {
       var nodes;
       if (ran == null) {
         ran = 1;
       }
       nodes = this.nodes();
       nodes.forEach(function(node) {
-        node.x += Math.random() * ran;
-        if (node.group && rotation !== void 0) {
-          return node.group.rotate(rotation, 200);
+        node.x += ran;
+        if (node.group) {
+          return node.group.rotate((Math.random() + 1) * -2 * ran, 200);
         }
       });
       return this.restart();
@@ -956,7 +956,7 @@
 
   initX = width / 2;
 
-  initScale = .1 / 500 * height;
+  initScale = .1 / 600 * height;
 
   svg = void 0;
 
@@ -1117,7 +1117,7 @@
         });
       } else {
         ran = Math.random() * 60 - 30;
-        return tree.wind(ran, ran * -2);
+        return tree.wind(ran);
       }
     }, interval);
   };

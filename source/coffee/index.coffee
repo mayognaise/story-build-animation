@@ -11,7 +11,7 @@ width = window.innerWidth
 height = window.innerHeight
 
 initX = width / 2
-initScale = .1 / 500 * height
+initScale = .1 / 600 * height
 
 svg = undefined
 svgData = {}
@@ -150,7 +150,7 @@ wind = ->
           treeGroup.remove()
     else
       ran = Math.random()*60 - 30
-      tree.wind(ran, ran * -2)
+      tree.wind(ran)
   , interval
 
 # =============================
