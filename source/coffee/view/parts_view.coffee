@@ -24,20 +24,22 @@ class PartsView
     else
       0
 
-  rotate: (deg, sec = 0) ->
+  rotate: (deg, sec = 0, ease = 'cubic-in-out') ->
     @origin ?= {}
     @origin.deg = deg
     @elem().transition()
       .duration(sec)
+      .ease(ease)
       .attr('transform', @transform(@origin))
     @
 
-  translate: (dat, sec = 0) ->
+  translate: (dat, sec = 0, ease = 'cubic-in-out') ->
     if dat
       @origin ?= {}
       @origin = _.extend(@origin, dat)
       @elem().transition()
         .duration(sec)
+        .ease(ease)
         .attr('transform', @transform(@origin))
       @
     else
@@ -46,12 +48,13 @@ class PartsView
       else
         {x:0,y:0}
 
-  scale: (scale, sec = 0) ->
+  scale: (scale, sec = 0, ease = 'cubic-in-out') ->
     if scale
       @origin ?= {}
       @origin.scale = scale
       @elem().transition()
         .duration(sec)
+        .ease(ease)
         .attr('transform', @transform(@origin))
       @
     else

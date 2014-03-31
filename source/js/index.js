@@ -84,28 +84,34 @@
       }
     };
 
-    PartsView.prototype.rotate = function(deg, sec) {
+    PartsView.prototype.rotate = function(deg, sec, ease) {
       if (sec == null) {
         sec = 0;
+      }
+      if (ease == null) {
+        ease = 'cubic-in-out';
       }
       if (this.origin == null) {
         this.origin = {};
       }
       this.origin.deg = deg;
-      this.elem().transition().duration(sec).attr('transform', this.transform(this.origin));
+      this.elem().transition().duration(sec).ease(ease).attr('transform', this.transform(this.origin));
       return this;
     };
 
-    PartsView.prototype.translate = function(dat, sec) {
+    PartsView.prototype.translate = function(dat, sec, ease) {
       if (sec == null) {
         sec = 0;
+      }
+      if (ease == null) {
+        ease = 'cubic-in-out';
       }
       if (dat) {
         if (this.origin == null) {
           this.origin = {};
         }
         this.origin = _.extend(this.origin, dat);
-        this.elem().transition().duration(sec).attr('transform', this.transform(this.origin));
+        this.elem().transition().duration(sec).ease(ease).attr('transform', this.transform(this.origin));
         return this;
       } else {
         if (this.origin) {
@@ -122,16 +128,19 @@
       }
     };
 
-    PartsView.prototype.scale = function(scale, sec) {
+    PartsView.prototype.scale = function(scale, sec, ease) {
       if (sec == null) {
         sec = 0;
+      }
+      if (ease == null) {
+        ease = 'cubic-in-out';
       }
       if (scale) {
         if (this.origin == null) {
           this.origin = {};
         }
         this.origin.scale = scale;
-        this.elem().transition().duration(sec).attr('transform', this.transform(this.origin));
+        this.elem().transition().duration(sec).ease(ease).attr('transform', this.transform(this.origin));
         return this;
       } else {
         if (this.origin) {
@@ -876,16 +885,19 @@
       }, target);
     };
 
-    Tree.prototype.wind = function(ran) {
+    Tree.prototype.wind = function(ran, sec) {
       var nodes;
       if (ran == null) {
         ran = 1;
+      }
+      if (sec == null) {
+        sec = 0;
       }
       nodes = this.nodes();
       nodes.forEach(function(node) {
         node.x += ran;
         if (node.group) {
-          return node.group.rotate((Math.random() + 1) * -2 * ran, 200);
+          return node.group.rotate((Math.random() + 1) * -2 * ran, sec, 'bounce');
         }
       });
       return this.restart();
@@ -1117,7 +1129,7 @@
         });
       } else {
         ran = Math.random() * 60 - 30;
-        return tree.wind(ran);
+        return tree.wind(ran, interval);
       }
     }, interval);
   };

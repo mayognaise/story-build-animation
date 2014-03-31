@@ -150,7 +150,7 @@ wind = ->
           treeGroup.remove()
     else
       ran = Math.random()*60 - 30
-      tree.wind(ran)
+      tree.wind(ran, interval)
   , interval
 
 # =============================

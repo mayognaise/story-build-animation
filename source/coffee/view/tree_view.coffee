@@ -68,12 +68,12 @@ class Tree
     target = @nodes()[0]
     @add({x:@width,y:target.y-20}, target)
 
-  wind: (ran = 1) ->
+  wind: (ran = 1, sec = 0) ->
     nodes = @nodes()
     nodes.forEach (node) ->
       node.x += ran
       if node.group
-        node.group.rotate((Math.random() + 1) * -2 * ran, 200)
+        node.group.rotate((Math.random() + 1) * -2 * ran, sec, 'bounce')
 
     @restart()
 
