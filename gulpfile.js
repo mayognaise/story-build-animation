@@ -108,7 +108,9 @@ gulp.task('coffee', function() {
   var stream = gulp.src(coffeeDir + '*.coffee')
     .pipe(include())
     .pipe(coffee())
-    .pipe(gulp.dest(jsDir));
+    .pipe(gulp.dest(build))
+    .pipe(refresh(lr_server));
+    // .pipe(gulp.dest(jsDir));
 });
 
 gulp.task('compile', function() {
