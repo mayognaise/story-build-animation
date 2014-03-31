@@ -50,8 +50,12 @@
       })(this));
     };
 
-    BaseView.prototype.resize = function() {
-      return console.log(this.width, this.height);
+    BaseView.prototype.resize = function() {};
+
+    BaseView.prototype.remove = function() {
+      clearTimeout(this.tid);
+      clearInterval(this.iid);
+      return this.group.remove();
     };
 
     BaseView.prototype.bodyWidth = function() {
@@ -419,7 +423,9 @@
           _this.flyFlag = true;
           _this.fly();
           return setTimeout(function() {
-            return _this.close(function() {});
+            return _this.close(function() {
+              return _this.loop();
+            });
           }, 6 * 1000);
         };
       })(this));
@@ -434,6 +440,11 @@
         y: this.y
       }, sec);
       return this;
+    };
+
+    WalkingBird.prototype.remove = function() {
+      this.flyFlag = false;
+      return WalkingBird.__super__.remove.call(this);
     };
 
     WalkingBird.prototype.open = function(onComplete) {
@@ -506,7 +517,7 @@
         duration = DOWN_TIME;
       }
       this.resize(duration);
-      this.iid = setTimeout((function(_this) {
+      this.tid = setTimeout((function(_this) {
         return function() {
           if (_this.flyFlag) {
             return _this.fly(up);

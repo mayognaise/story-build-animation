@@ -32,13 +32,17 @@ class WalkingBird extends BaseView
       @fly()
       setTimeout =>
         @close =>
-          # @loop()
+          @loop()
       , 6 * 1000
 
   resize: (sec = 0) ->
     # @group.translate({x:@width/2,y:@height/2+@y}, sec)
     @group.translate({x:0,y:@y}, sec)
     @
+
+  remove: ->
+    @flyFlag = false
+    super()
 
   open: (onComplete) ->
     setTimeout =>
@@ -97,7 +101,7 @@ class WalkingBird extends BaseView
       up = true
       duration = DOWN_TIME
     @resize(duration)
-    @iid = setTimeout =>
+    @tid = setTimeout =>
       if @flyFlag then @fly(up)
     , duration
     @

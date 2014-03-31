@@ -25,7 +25,12 @@ class BaseView
     d3.xml("svg/#{@id}.svg", 'image/svg+xml', (@data) => @onLoadSVG())
 
   resize: ->
-    console.log(@width, @height)
+    # console.log(@width, @height)
+
+  remove: ->
+    clearTimeout(@tid)
+    clearInterval(@iid)
+    @group.remove()
 
   bodyWidth: ->
     Number(d3.select(@data).select('svg').attr('width'))
