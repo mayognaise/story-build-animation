@@ -68,10 +68,16 @@ class PartsView
       @_elem = elem
     @_elem
 
+  selector: ->
+    unless @_selector
+      @_selector = d3.select(@data).select("##{@klass}")
+    @_selector
+
   path: ->
     unless @_path
-      el = d3.select(@data).select("##{@klass}")
-      @_path = el.select(el[0][0].firstElementChild.nodeName)
+      el = @selector()
+      child = el[0][0]
+      @_path = if child.nodeName is 'g' then el.select(child.firstElementChild.nodeName) else el
     @_path
 
   fill: (hex) ->

@@ -6,6 +6,7 @@
 #= require view/group_view.coffee
 #= require view/walking_bird_view.coffee
 #= require view/tree_view.coffee
+#= require view/sun_view.coffee
 
 width = window.innerWidth
 height = window.innerHeight
@@ -21,7 +22,11 @@ endFlag = false
 tree = undefined
 treeGroup = undefined
 
+sun = undefined
+sunGroup = undefined
+
 walkingBirdId = 'walking_bird'
+sunId = 'sun'
 
 # =============================
 flyBird = (d) ->
@@ -92,7 +97,9 @@ animateBirds = ->
       group.scale(initScale).rotate(d.rotation)
       d.group = group
       d.a = ~~(Math.random()*20) + 15
-      d.el = new WalkingBird(group.elem(), walkingBirdId, d.type, svgData[walkingBirdId])
+      d.el = new WalkingBird group.elem(), walkingBirdId,
+        type: d.type
+        data: svgData[walkingBirdId]
       arr.push(d)
     )
     .remove()
@@ -154,22 +161,35 @@ wind = ->
   , interval
 
 # =============================
+creatTree = ->
+  leafData =
+    klass: WalkingBird
+    id: walkingBirdId
+    data: svgData[walkingBirdId]
+    scale: initScale
+  
+  treeGroup = svg.append('g').attr('id', 'tree')
+  tree = new Tree(treeGroup, initX, height, leafData)
+
+creatSun = ->
+  sunGroup = svg.append('g').attr('id', 'sun')
+  sun = new Sun sunGroup, sunId,
+    data: svgData[sunId]
+    scale: initScale
+    x: width * 2 / 3
+    y: height * 1 / 15
+
 start = ->
   svg = d3.select('body').append('svg')
     .attr('width', width)
     .attr('height', height)
-  
-  leafData =
-    klass: WalkingBird
-    data: svgData[walkingBirdId]
-    scale: initScale
-    id: walkingBirdId
-  
-  treeGroup = svg.append('g').attr('id', 'tree')
-  tree = new Tree(treeGroup, initX, height, leafData)
-  tree.createBranch(setTimeout(wind, 5000))
 
-  window.test = svg
+  creatSun()
+  creatTree()
+
+  tree.createBranch(setTimeout(wind, 5000))
+  
+
 
 # =============================
 loadSVG = (id, onComplete) ->
@@ -185,7 +205,7 @@ loadSVGs = (arr, onComplete) ->
       loadSVGs(arr, onComplete)
 
 init = ->
-  loadSVG([walkingBirdId], start)
+  loadSVGs([walkingBirdId, sunId], start)
   # queue()
   #   .defer(fs.stat, __dirname + "/../package.json")
   #   .defer(fs.stat, __dirname + "/../package2.json")

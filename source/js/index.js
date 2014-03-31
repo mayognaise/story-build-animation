@@ -1,16 +1,26 @@
 (function() {
-  var BASE_TIME, BaseView, CircleView, DOWN_TIME, GroupView, PartsView, PathView, PolygonView, Tree, UP_TIME, WING_ORIGIN, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, animateBirds, endFlag, flyBird, height, init, initScale, initX, kill, loadSVG, loadSVGs, openBird, start, svg, svgData, tree, treeGroup, walkingBirdId, width, wind,
+  var BASE_TIME, BaseView, CircleView, DOWN_TIME, GroupView, PartsView, PathView, PolygonView, Sun, SunCore, SunOutside, Tree, UP_TIME, WING_ORIGIN, WalkingBird, WalkingBirdBack, WalkingBirdBody, WalkingBirdEye, WalkingBirdLeg, WalkingBirdLegs, WalkingBirdWing, WalkingBirdWings, animateBirds, creatSun, creatTree, endFlag, flyBird, height, init, initScale, initX, kill, loadSVG, loadSVGs, openBird, start, sun, sunGroup, sunId, svg, svgData, tree, treeGroup, walkingBirdId, width, wind,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   BaseView = (function() {
-    function BaseView(parent, id, type, data) {
+    function BaseView(parent, id, option) {
       this.parent = parent;
       this.id = id;
-      this.type = type != null ? type : 1;
-      this.data = data;
+      if (option == null) {
+        option = {};
+      }
       this.width = window.innerWidth;
       this.height = window.innerHeight;
+      this.type = option.type || 1;
+      if (option.data) {
+        this.data = option.data;
+      }
+      this.group = new GroupView(this.parent, this.id, option.origin);
+      this.group.addType(this.type);
+      this.group.translate(_.clone(option));
+      this.group.hide();
+      this.elem = this.group.target();
       if (!this.data) {
         if (this.id) {
           this.loadSVG();
@@ -42,6 +52,14 @@
 
     BaseView.prototype.resize = function() {
       return console.log(this.width, this.height);
+    };
+
+    BaseView.prototype.bodyWidth = function() {
+      return Number(d3.select(this.data).select('svg').attr('width'));
+    };
+
+    BaseView.prototype.bodyHeight = function() {
+      return Number(d3.select(this.data).select('svg').attr('height'));
     };
 
     return BaseView;
@@ -158,11 +176,19 @@
       return this._elem;
     };
 
+    PartsView.prototype.selector = function() {
+      if (!this._selector) {
+        this._selector = d3.select(this.data).select("#" + this.klass);
+      }
+      return this._selector;
+    };
+
     PartsView.prototype.path = function() {
-      var el;
+      var child, el;
       if (!this._path) {
-        el = d3.select(this.data).select("#" + this.klass);
-        this._path = el.select(el[0][0].firstElementChild.nodeName);
+        el = this.selector();
+        child = el[0][0];
+        this._path = child.nodeName === 'g' ? el.select(child.firstElementChild.nodeName) : el;
       }
       return this._path;
     };
@@ -358,17 +384,15 @@
   WalkingBird = (function(_super) {
     __extends(WalkingBird, _super);
 
-    function WalkingBird(parent, id, type, data) {
+    function WalkingBird(parent, id, option) {
       this.parent = parent;
       this.id = id;
-      this.type = type;
-      this.data = data;
+      if (option == null) {
+        option = {};
+      }
       this.y = 0;
-      this.group = new GroupView(this.parent, this.id, _.clone(WING_ORIGIN));
-      this.group.addType(this.type);
-      this.group.hide();
-      this.elem = this.group.target();
-      WalkingBird.__super__.constructor.call(this, this.parent, this.id, this.type, this.data);
+      option.origin = _.clone(WING_ORIGIN);
+      WalkingBird.__super__.constructor.call(this, this.parent, this.id, option);
     }
 
     WalkingBird.prototype.onLoadSVG = function() {
@@ -387,10 +411,6 @@
 
     WalkingBird.prototype.bodyHeight = function() {
       return 180;
-    };
-
-    WalkingBird.prototype.bodyWidth = function() {
-      return 505;
     };
 
     WalkingBird.prototype.loop = function() {
@@ -815,13 +835,17 @@
       link.enter().insert('line', '.node').attr('class', 'link');
       node = this.node().data(this.nodes());
       node.enter().insert('g', '.cursor').attr('class', 'node').each(function(d) {
-        var el, group, obj;
+        var el, group, obj, option;
         el = d3.select(this);
         if (alternateObj && d.last === true && Math.random() < .05) {
           el.classed(alternateObj.group || ("" + alternateObj.id + "_group"), true);
           group = new GroupView(el, 'group');
           group.scale(alternateObj.scale || 1).rotate(d.rotation);
-          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data);
+          option = {
+            type: d.type || 1,
+            data: alternateObj.data
+          };
+          obj = new alternateObj.klass(group.elem(), alternateObj.id, option);
           d.group = group;
           return d.el = obj;
         } else {
@@ -962,6 +986,56 @@
 
   })();
 
+  BASE_TIME = 500;
+
+  UP_TIME = 400;
+
+  DOWN_TIME = 800;
+
+  WING_ORIGIN = {
+    x: 253,
+    y: 253
+  };
+
+  Sun = (function(_super) {
+    __extends(Sun, _super);
+
+    function Sun() {
+      return Sun.__super__.constructor.apply(this, arguments);
+    }
+
+    Sun.prototype.onLoadSVG = function() {
+      this.outside = new SunOutside(this.elem, this.data);
+      this.core = new SunCore(this.elem, this.data);
+      return this.group.show();
+    };
+
+    return Sun;
+
+  })(BaseView);
+
+  SunCore = (function() {
+    function SunCore(elem, data) {
+      this.elem = elem;
+      this.data = data;
+      this.body = new PathView(this.elem, this.data, 'core');
+    }
+
+    return SunCore;
+
+  })();
+
+  SunOutside = (function() {
+    function SunOutside(elem, data) {
+      this.elem = elem;
+      this.data = data;
+      this.body = new PathView(this.elem, this.data, 'outside');
+    }
+
+    return SunOutside;
+
+  })();
+
   width = window.innerWidth;
 
   height = window.innerHeight;
@@ -980,7 +1054,13 @@
 
   treeGroup = void 0;
 
+  sun = void 0;
+
+  sunGroup = void 0;
+
   walkingBirdId = 'walking_bird';
+
+  sunId = 'sun';
 
   flyBird = function(d) {
     var el, iid;
@@ -1060,7 +1140,10 @@
       group.scale(initScale).rotate(d.rotation);
       d.group = group;
       d.a = ~~(Math.random() * 20) + 15;
-      d.el = new WalkingBird(group.elem(), walkingBirdId, d.type, svgData[walkingBirdId]);
+      d.el = new WalkingBird(group.elem(), walkingBirdId, {
+        type: d.type,
+        data: svgData[walkingBirdId]
+      });
       return arr.push(d);
     }).remove();
     if (arr.length > 0) {
@@ -1134,19 +1217,33 @@
     }, interval);
   };
 
-  start = function() {
+  creatTree = function() {
     var leafData;
-    svg = d3.select('body').append('svg').attr('width', width).attr('height', height);
     leafData = {
       klass: WalkingBird,
+      id: walkingBirdId,
       data: svgData[walkingBirdId],
-      scale: initScale,
-      id: walkingBirdId
+      scale: initScale
     };
     treeGroup = svg.append('g').attr('id', 'tree');
-    tree = new Tree(treeGroup, initX, height, leafData);
-    tree.createBranch(setTimeout(wind, 5000));
-    return window.test = svg;
+    return tree = new Tree(treeGroup, initX, height, leafData);
+  };
+
+  creatSun = function() {
+    sunGroup = svg.append('g').attr('id', 'sun');
+    return sun = new Sun(sunGroup, sunId, {
+      data: svgData[sunId],
+      scale: initScale,
+      x: width * 2 / 3,
+      y: height * 1 / 15
+    });
+  };
+
+  start = function() {
+    svg = d3.select('body').append('svg').attr('width', width).attr('height', height);
+    creatSun();
+    creatTree();
+    return tree.createBranch(setTimeout(wind, 5000));
   };
 
   loadSVG = function(id, onComplete) {
@@ -1173,7 +1270,7 @@
   };
 
   init = function() {
-    return loadSVG([walkingBirdId], start);
+    return loadSVGs([walkingBirdId, sunId], start);
   };
 
   kill = function() {

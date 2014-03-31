@@ -27,7 +27,10 @@ class Tree
           el.classed(alternateObj.group or "#{alternateObj.id}_group", true)
           group = new GroupView(el, 'group')
           group.scale(alternateObj.scale or 1).rotate(d.rotation)
-          obj = new alternateObj.klass(group.elem(), alternateObj.id, d.type, alternateObj.data)
+          option =
+            type: d.type or 1
+            data: alternateObj.data
+          obj = new alternateObj.klass(group.elem(), alternateObj.id, option)
           d.group = group
           d.el = obj
         else
