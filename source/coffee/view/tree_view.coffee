@@ -1,4 +1,4 @@
-class Tree
+class Tree extends BaseView
   constructor: (@elem, @width, @height, @alternateObj) ->
     @_force = d3.layout.force()
       .size([@width*2, @height*2/3])
@@ -72,13 +72,31 @@ class Tree
     @add({x:@width,y:target.y-20}, target)
 
   wind: (ran = 1, sec = 0) ->
+    @clear()
     nodes = @nodes()
     nodes.forEach (node) ->
       node.x += ran
       if node.group
         node.group.rotate((Math.random() + 1) * -2 * ran, sec, 'bounce')
-
     @restart()
+
+  march: (time) ->
+    @clear()
+    if time
+      down = true
+      side = 1
+      nodes = @nodes()
+      @iid = setInterval =>
+        nodes.forEach (node) ->
+          if down
+            node.y += 10
+          else
+            node.x += side * 10
+            
+        down = !down
+        if down then side *= -1
+        @restart()
+      , time / 7
 
   add: (node, target) ->
     nodes = @nodes()

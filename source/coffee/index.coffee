@@ -137,20 +137,19 @@ animateBirds = ->
         group.translate(pos)
       arr = newArr
       if count is open + 30
-        audio.play('chan-chan')
-        setTimeout ->
-          audio.play('hogaraka')
-        , 5000
-      if ++count > end
-        clearInterval(iid)
-        for d, index in arr
-          group = d.group
-          group.remove()
+        audio.play('open')
         sky.transition()
           .duration(1000)
           .style('opacity', '0')
           .each('end', -> sky.remove())
-        
+        setTimeout ->
+          audio.play('hogaraka')
+        , 4500
+      if ++count > end
+        clearInterval(iid)
+        for d, index in arr
+          group = d.group
+          group.remove() 
     , 33
   else
     console.log('no bird')
@@ -249,14 +248,22 @@ start = ->
   creatTree()
 
   sun.play()
-  tree.createBranch ->
-    setTimeout ->
-      cloudy()
-      wind()
-    , 4000
 
-  audio = new AudioCollection()
-  audio.play('hogaraka')
+  audio = new AudioCollection ['wind', 'open', 'hogaraka'], ->
+    audio.play 'hogaraka', ->
+      tempo = 3150
+      setTimeout ->
+        return
+        tree.march(tempo)
+        setTimeout ->
+          tree.clear()
+          cloudy()
+          wind()
+        , 5000
+      , tempo
+      tree.createBranch()
+
+
 
 # =============================
 loadSVG = (id, onComplete) ->
