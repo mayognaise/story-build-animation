@@ -253,7 +253,6 @@ start = ->
     audio.play 'hogaraka', ->
       tempo = 3150
       setTimeout ->
-        return
         tree.march(tempo)
         setTimeout ->
           tree.clear()
