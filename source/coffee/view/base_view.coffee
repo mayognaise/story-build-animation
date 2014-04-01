@@ -27,9 +27,12 @@ class BaseView
   resize: ->
     # console.log(@width, @height)
 
-  remove: ->
+  clear: ->
     clearTimeout(@tid)
     clearInterval(@iid)
+
+  remove: ->
+    @clear()
     @group.remove()
 
   bodyWidth: ->
@@ -37,3 +40,6 @@ class BaseView
 
   bodyHeight: ->
     Number(d3.select(@data).select('svg').attr('height'))
+
+  translate: (data, sec) ->
+    @group.translate(data, sec)

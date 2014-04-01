@@ -8,8 +8,12 @@
 #= require view/tree_view.coffee
 #= require view/sun_view.coffee
 
+#= require collection/audio_collection.coffee
+
 width = window.innerWidth
 height = window.innerHeight
+
+audio = undefined
 
 initX = width / 2
 initScale = .1 / 600 * height
@@ -24,6 +28,8 @@ treeGroup = undefined
 
 sun = undefined
 sunGroup = undefined
+
+sky = undefined
 
 walkingBirdId = 'walking_bird'
 sunId = 'sun'
@@ -106,8 +112,8 @@ animateBirds = ->
 
   if arr.length > 0
     count = 0
-    end = 120
-    open = 20
+    open = 60
+    end = open + 80
     iid = setInterval ->
       if endFlag
         clearInterval(iid)
@@ -116,37 +122,54 @@ animateBirds = ->
       for d, index in arr
         group = d.group
         pos = group.translate()
-        if count is open and index % 3 is 0
-          d.openCount = open + ~~(Math.random()*30)
+        if count is open
+          if index % 3 is 0
+            d.openCount = open + ~~(Math.random()*30)
+          else
+            d.pow = 1.03
         if count is d.openCount
           openBird(d, count, open)
         else
           newArr.push(d)
-        pos.x -= d.a / 4
-        pos.y += Math.pow(1.04,count)
+        pos.x -= d.a / 8
+        pos.y += Math.pow(d.pow or 1.002,count)
         pos.deg = (group.rotation() + d.a) % 360
         group.translate(pos)
       arr = newArr
+      if count is open + 30
+        audio.play('chan-chan')
+        setTimeout ->
+          audio.play('hogaraka')
+        , 5000
       if ++count > end
         clearInterval(iid)
         for d, index in arr
           group = d.group
           group.remove()
+        sky.transition()
+          .duration(1000)
+          .style('opacity', '0')
+          .each('end', -> sky.remove())
+        
     , 33
   else
     console.log('no bird')
 
+  # audio.play('horror')
+  audio.stop()
+
 # =============================
 wind = ->
   count = 0
-  end = 5000
+  end = 8000
   interval = 600
   iid = setInterval ->
     if endFlag
       clearInterval(iid)
       return
+    num = count * 10
     if ++count > end / interval
-      tree.wind(50)
+      tree.wind(num)
       animateBirds()
       clearInterval(iid)
       treeGroup.transition()
@@ -156,11 +179,48 @@ wind = ->
           tree.stop()
           treeGroup.remove()
     else
-      ran = Math.random()*60 - 30
+      ran = Math.random() * num * 2 - num
       tree.wind(ran, interval)
   , interval
 
+  audio.play('wind')
+  
 # =============================
+cloudy = ->
+  time = 3000
+  sun.translate({x: width + 100}, time)
+  sky.transition()
+    .duration(time)
+    .attr('transform', 'translate(0,0)')
+    # .each('end', wind)
+
+# =============================
+createDarkSky = ->
+  gradient = svg.append('svg:defs')
+    .append('svg:linearGradient')
+    .attr('id', 'gradient')
+    .attr('x1', '0%')
+    .attr('y1', '0%')
+    .attr('x2', '0%')
+    .attr('y2', '80%')
+    .attr('spreadMethod', 'pad')
+
+  gradient.append('svg:stop')
+    .attr('offset', '0%')
+    .attr('stop-color', '#909fa3')
+    .attr('stop-opacity', 1)
+
+  gradient.append('svg:stop')
+    .attr('offset', '100%')
+    .attr('stop-color', '#f2ede2')
+    .attr('stop-opacity', 1)
+
+  sky = svg.append('svg:rect')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('transform', "translate(0,#{-height})")
+    .style('fill', 'url(#gradient)')
+
 creatTree = ->
   leafData =
     klass: WalkingBird
@@ -184,12 +244,19 @@ start = ->
     .attr('width', width)
     .attr('height', height)
 
+  createDarkSky()
   creatSun()
   creatTree()
 
-  tree.createBranch(setTimeout(wind, 5000))
-  
+  sun.play()
+  tree.createBranch ->
+    setTimeout ->
+      cloudy()
+      wind()
+    , 4000
 
+  audio = new AudioCollection()
+  audio.play('hogaraka')
 
 # =============================
 loadSVG = (id, onComplete) ->
