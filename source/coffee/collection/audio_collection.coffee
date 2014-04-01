@@ -1,6 +1,7 @@
 class AudioCollection
   constructor: (soundData = [], onLoad) ->
     @volume = 1
+    @fadeTime = 500
     @path = 'audio'
     @soundData = []
     for data in soundData
@@ -29,20 +30,33 @@ class AudioCollection
         loop: false
         volume: obj.volume or @volume
         onload: -> data.status = 'onload'
-        onplay: -> if _.isFunction(data.onplay) then data.onplay()
-        onend: -> if _.isFunction(data.onend) then data.onend()
+        onplay: -> 
+          if _.isFunction(data.onplay) then data.onplay()
+          data.onplay = undefined
+        onend: ->
+          if _.isFunction(data.onend) then data.onend()
+          data.onend = undefined
 
   play: (id, onPlay, onEnd) ->
-    @stop()
     if id
       audio = @audio(id)
       @data(id).onplay = onPlay
       @data(id).onend = onEnd
       audio.play()
 
+  fadeIn: (id) ->
+    if id
+      @audio(id).fadeIn(@volume, @fadeTime)
+
+  fadeOut: (id) ->
+    if id
+      @audio(id).fadeOut(0, @fadeTime)
+
   pause: (id) ->
     if id
       @audio(id).pause()
+    else
+      @audio(data.id).pause() for data in @soundData
 
   stop: (id) ->
     if id

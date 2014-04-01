@@ -9,9 +9,8 @@ class Tree extends BaseView
       .on('tick', => @tick())
     @restart()
 
-  # typeCount: 0
   restart: ->
-    # typeCount = @typeCount
+    typeCount = ~~(Math.random()*3)
     alternateObj = @alternateObj
     link = @link().data(@links())
     link.enter().insert('line', '.node')
@@ -22,8 +21,8 @@ class Tree extends BaseView
       .attr('class', 'node')
       .each (d) ->
         el = d3.select(@)
-        if alternateObj and d.last is true and Math.random() < .05
-          # d.type = (typeCount++ % 4) + 1
+        if alternateObj and d.last is true and d.index % 13 is 0
+          d.type = (typeCount++ % 3) + 1
           el.classed(alternateObj.group or "#{alternateObj.id}_group", true)
           group = new GroupView(el, 'group')
           group.scale(alternateObj.scale or 1).rotate(d.rotation)
@@ -41,6 +40,7 @@ class Tree extends BaseView
     count = 0
     arr = []
     max = 4
+    lastIndex = 0
     iid = setInterval =>
       if ++count <= max
         amount = 1
@@ -57,7 +57,7 @@ class Tree extends BaseView
                   y:node.y
                   last: count is max
                   rotation:(~~(Math.random()*80)+5)
-                  type:(~~(Math.random()*3) + 1)
+                  index: if count is max then lastIndex++
                 },
                 nodes[index]
               ])
@@ -66,10 +66,12 @@ class Tree extends BaseView
       else
         clearInterval(iid)
         if onComplete then onComplete()
+      @restart()
     , 400
 
     target = @nodes()[0]
     @add({x:@width,y:target.y-20}, target)
+    @restart()
 
   wind: (ran = 1, sec = 0) ->
     @clear()
@@ -106,7 +108,6 @@ class Tree extends BaseView
       x = target.x - node.x
       y = target.y - node.y
       links.push(source: node, target: target)
-    @restart()
 
   tick: ->
     @link()

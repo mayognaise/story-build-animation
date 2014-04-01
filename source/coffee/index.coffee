@@ -123,7 +123,7 @@ animateBirds = ->
         group = d.group
         pos = group.translate()
         if count is open
-          if index % 3 is 0
+          if index % 7 is 0
             d.openCount = open + ~~(Math.random()*30)
           else
             d.pow = 1.03
@@ -132,19 +132,20 @@ animateBirds = ->
         else
           newArr.push(d)
         pos.x -= d.a / 8
-        pos.y += Math.pow(d.pow or 1.002,count)
+        pos.y += Math.pow(d.pow or 1.0001,count)
         pos.deg = (group.rotation() + d.a) % 360
         group.translate(pos)
       arr = newArr
       if count is open + 30
+        audio.fadeOut('wind')
         audio.play('open')
         sky.transition()
           .duration(1000)
           .style('opacity', '0')
           .each('end', -> sky.remove())
         setTimeout ->
-          audio.play('hogaraka')
-        , 4500
+          audio.fadeIn('hogaraka')
+        , 5000
       if ++count > end
         clearInterval(iid)
         for d, index in arr
@@ -258,6 +259,7 @@ start = ->
           tree.clear()
           cloudy()
           wind()
+          audio.fadeOut('hogaraka')
         , 5000
       , tempo
       tree.createBranch()
