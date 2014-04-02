@@ -35,7 +35,27 @@ walkingBirdId = 'walking_bird'
 sunId = 'sun'
 
 # =============================
+stepBird = (d) ->
+  el = d.el
+  time = 100
+  group = d.group
+  scale = group.scale()
+  bodyWidth = el.bodyWidth() * scale
+  el.step(time)
+  iid = setInterval ->
+    pos = group.translate()
+    if pos.x > width + bodyWidth
+      clearInterval(iid)
+      el.clear()
+      group.remove()
+    else
+      pos.x += scale * 100
+      group.translate(pos)
+
+  , time 
+
 flyBird = (d) ->
+  group = d.group
   el = d.el
   el.flyFlag = true
   el.fly()
@@ -43,7 +63,6 @@ flyBird = (d) ->
     if endFlag
       clearInterval(iid)
       return
-    group = d.group
     pos = group.translate()
     bottom = d.el.bodyHeight() * group.scale()
     bodyWidth = d.el.bodyWidth() * group.scale()
@@ -54,12 +73,14 @@ flyBird = (d) ->
       el.flyFlag = false
       group.remove()
     else if y >= height - up
+      time = 500
       el.fly(true)
       el.flyFlag = false
       group.rotate(0)
-      pos.y += up
-      group.translate(pos, 500)
+      pos.y = height - bottom
+      group.translate(pos, time)
       clearInterval(iid)
+      setTimeout(stepBird, time, d)
     else
       pos.x += d.a / 35 * 1.1
       pos.y += 2

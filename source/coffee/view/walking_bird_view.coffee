@@ -23,6 +23,8 @@ class WalkingBird extends BaseView
     @group.show()
     # @loop()
 
+  bodyWidth: ->
+    504
   bodyHeight: ->
     180
 
@@ -34,6 +36,14 @@ class WalkingBird extends BaseView
         @close =>
           @loop()
       , 6 * 1000
+
+  step: (time = 300) ->
+    side = 1
+    @iid = setInterval =>
+      @legs.step(side)
+      side *= -1
+      @group.rotate(side * 4)
+    , time
 
   resize: (sec = 0) ->
     # @group.translate({x:@width/2,y:@height/2+@y}, sec)
@@ -87,7 +97,7 @@ class WalkingBird extends BaseView
     if up
       @wings.up()
       @body.up()
-      @legs.up()
+      @legs.down()
       @back.up()
       @y = 0
       up = false
@@ -95,7 +105,7 @@ class WalkingBird extends BaseView
     else
       @wings.down()
       @body.down()
-      @legs.down()
+      @legs.up()
       @back.down()
       @y = 100 + ~~(Math.random()*200)
       up = true
@@ -178,6 +188,14 @@ class WalkingBirdLegs
   down: ->
     @leftLeg.down()
     @rightLeg.down()
+  step: (side) ->
+    if side is 1
+      @leftLeg.stepUp()
+      @rightLeg.stepDown()
+    else
+      @leftLeg.stepDown()
+      @rightLeg.stepUp()
+
 # ================================================
 class WalkingBirdLeg
   constructor: (@elem, @data, @side, origin) ->
@@ -187,10 +205,14 @@ class WalkingBirdLeg
     @leg.show().scale(1,WALKING_BASE_TIME/2)
   hide: ->
     @leg.hide().scale(0)
-  up: ->
-    @leg.rotate(0, WALKING_UP_TIME)
   down: ->
+    @leg.rotate(0, WALKING_UP_TIME)
+  up: ->
     @leg.rotate((if @side is 'left' then 30 else -30), WALKING_DOWN_TIME)
+  stepUp: ->
+    @leg.rotate((if @side is 'left' then 45 else -45))
+  stepDown: ->
+    @leg.rotate(0)
 
 
 # ================================================
